@@ -5,7 +5,7 @@
   "description": "Your personal dictionary and reminder extension.",
   "permissions": ["storage", "notifications", "activeTab", "scripting"],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "popup/popup.html", 
     "default_icon": {
       "128": "icons/icon128x128.png"
     }

@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <h2>WordsBark</h2>
-  <textarea id="wordInput" placeholder="Paste word or phrase..."></textarea>
-  <button id="lookupBtn">Lookup</button>
-  <div id="definition"></div>
-  <button id="saveBtn" style="display:none;">Save to List</button>
-</body>
+  <head>
+    <link rel="stylesheet" href="../static/style.css">
+  </head>
+  <body>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <h2 style="margin:0;">WordsBark</h2>
+      <label style="font-size:0.85rem;display:flex;align-items:center;gap:8px;">
+        <input id="themeToggle" type="checkbox" />
+        Dark
+      </label>
+    </div>
+    <textarea id="wordInput" placeholder="Paste word or phrase..."></textarea>
+    <button id="lookupBtn">Lookup</button>
+    <div id="definition"></div>
+    <button id="saveBtn" style="display:none;">Save to List</button>
+  </body>
 <script type="module" src="popup.js"></script>
 </html>

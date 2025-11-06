@@ -1,18 +1,19 @@
+/* Light (default) */
 body {
   font-family: Arial, Helvetica, sans-serif;
   padding: 10px;
   width: 300px;
-  background: #0b1220; /* dark background */
-  color: #ffffff;      /* light text */
+  background: #ffffff;
+  color: #0f1721;
   transition: background-color 150ms ease, color 150ms ease;
 }
 
 textarea {
   width: 100%;
   height: 50px;
-  background: #0f1721;
-  color: #ffffff;
-  border: 1px solid #24303b;
+  background: #ffffff;
+  color: #0f1721;
+  border: 1px solid #e5e7eb;
   padding: 6px;
   border-radius: 6px;
 }
@@ -31,5 +32,25 @@ button {
 #definition {
   margin-top: 10px;
   font-style: italic;
+  color: #374151;
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] body {
+  background: #0b1220;
+  color: #ffffff;
+}
+
+[data-theme="dark"] textarea {
+  background: #0f1721;
+  color: #ffffff;
+  border: 1px solid #24303b;
+}
+
+[data-theme="dark"] button {
+  background: #1e40af;
+}
+
+[data-theme="dark"] #definition {
   color: #cbd5e1;
 }

@@ -1,4 +1,4 @@
-import { lookupWord } from './dictionary.js';
+import { lookupWord } from '../dictionary.js';
 
 document.getElementById('searchBtn').addEventListener('click', async () => {
   const word = document.getElementById('wordInput').value.trim();

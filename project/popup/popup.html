@@ -15,6 +15,31 @@
       <button id="lookupBtn">Lookup</button>
     <div id="results"></div>
     <button id="saveBtn" style="display:none;">Save to List</button>
+    <button id="manageBtn" style="margin-top:8px;">Manage List</button>
+
+    <!-- Manage view (hidden by default) -->
+    <div id="manageView" style="display:none; margin-top:8px;">
+      <h3>Saved words</h3>
+      <div id="wordList"></div>
+      <button id="clearListBtn" style="margin-top:8px;">Clear All</button>
+      <button id="backBtn" style="margin-top:8px;">Back</button>
+    </div>
+
+    <!-- Reminder settings -->
+    <div id="settings" style="margin-top:10px;">
+      <h3 style="margin:4px 0;">Reminder Settings</h3>
+      <label>Enable reminders: <input type="checkbox" id="reminderEnabled" /></label>
+      <div style="margin-top:6px;">
+        <label>Interval (minutes): <input type="number" id="reminderInterval" min="1" value="30" style="width:70px;" /></label>
+      </div>
+      <div style="margin-top:6px;">
+        <label>Start hour (0-23): <input type="number" id="reminderStart" min="0" max="23" value="0" style="width:70px;" /></label>
+      </div>
+      <div style="margin-top:6px;">
+        <label>End hour (0-24): <input type="number" id="reminderEnd" min="1" max="24" value="24" style="width:70px;" /></label>
+      </div>
+      <button id="saveSettingsBtn" style="margin-top:6px;">Save Settings</button>
+    </div>
   </body>
 <script type="module" src="popup.js"></script>
 </html>

@@ -1,23 +1,77 @@
-function showReminder() {
-  chrome.storage.local.get("wordList", (result) => {
-    const list = result.wordList || [];
+// Show a reminder notification if there are saved words and the current time is inside the allowed window
+function showReminderIfAllowed() {
+  chrome.storage.local.get(["wordList", "reminderEnabled", "reminderStart", "reminderEnd"], function(res) {
+    var list = res.wordList || [];
+    if (!res.reminderEnabled) return;
     if (list.length === 0) return;
 
-    const randomWord = list[Math.floor(Math.random() * list.length)];
+    var now = new Date();
+    var hour = now.getHours(); // 0-23
+    var start = (typeof res.reminderStart === 'number') ? res.reminderStart : 0;
+    var end = (typeof res.reminderEnd === 'number') ? res.reminderEnd : 24;
+
+    var inWindow = false;
+    if (start <= end) {
+      inWindow = (hour >= start && hour < end);
+    } else {
+      // wrap-around (e.g., start 22, end 6)
+      inWindow = (hour >= start || hour < end);
+    }
+
+    if (!inWindow) return;
+
+    var randomWord = list[Math.floor(Math.random() * list.length)];
+    var title = 'Reminder: ' + (randomWord.word || 'word');
+    var message = '';
+    if (randomWord.meanings) {
+      if (typeof randomWord.meanings === 'string') {
+        message = randomWord.meanings;
+      } else if (typeof randomWord.meanings === 'object') {
+        // try to pick one short definition
+        for (var p in randomWord.meanings) {
+          if (Array.isArray(randomWord.meanings[p]) && randomWord.meanings[p].length > 0) {
+            message = randomWord.meanings[p][0].definition || '';
+            break;
+          }
+        }
+      }
+    }
+
     chrome.notifications.create({
-      type: "basic",
-      iconUrl: "icon128.png",
-      title: `Reminder: ${randomWord.word}`,
-      message: randomWord.meaning
+      type: 'basic',
+      iconUrl: 'icons/icon128.png',
+      title: title,
+      message: message || 'Remember this word!'
     });
   });
 }
 
-// Trigger every 30 minutes
-chrome.alarms.create("reminderAlarm", { periodInMinutes: 30 });
+// Helper to (re)create the alarm using stored interval
+function setupAlarmFromSettings() {
+  chrome.storage.local.get({ reminderEnabled: true, reminderInterval: 30 }, function(res) {
+    // clear previous alarm
+    chrome.alarms.clear('reminderAlarm', function() {
+      if (!res.reminderEnabled) return;
+      var interval = parseInt(res.reminderInterval, 10) || 30;
+      if (interval < 1) interval = 1;
+      chrome.alarms.create('reminderAlarm', { periodInMinutes: interval });
+    });
+  });
+}
 
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === "reminderAlarm") {
-    showReminder();
+// initial setup
+setupAlarmFromSettings();
+
+// react to storage changes (when user updates settings)
+chrome.storage.onChanged.addListener(function(changes, area) {
+  if (area !== 'local') return;
+  if (changes.reminderEnabled || changes.reminderInterval) {
+    setupAlarmFromSettings();
+  }
+});
+
+chrome.alarms.onAlarm.addListener(function(alarm) {
+  if (alarm && alarm.name === 'reminderAlarm') {
+    showReminderIfAllowed();
   }
 });

@@ -102,3 +102,128 @@ if (lookupBtn) {
   console.warn('Lookup button (#lookupBtn) not found in DOM');
 }
 
+// --- Manage list UI ---
+var manageBtn = document.getElementById('manageBtn');
+var manageView = document.getElementById('manageView');
+var wordListDiv = document.getElementById('wordList');
+var clearListBtn = document.getElementById('clearListBtn');
+var backBtn = document.getElementById('backBtn');
+
+function loadWordList() {
+  wordListDiv.innerHTML = 'Loading...';
+  if (typeof chrome?.storage?.local === 'undefined') {
+    wordListDiv.textContent = 'No storage available.';
+    return;
+  }
+  chrome.storage.local.get({ wordList: [] }, function(result) {
+    var list = result.wordList || [];
+    if (list.length === 0) {
+      wordListDiv.innerHTML = '<p>No words saved.</p>';
+      return;
+    }
+    wordListDiv.innerHTML = '';
+    for (var i = 0; i < list.length; i++) {
+      (function(item, idx) {
+        var row = document.createElement('div');
+        row.style.borderBottom = '1px solid rgba(0,0,0,0.08)';
+        row.style.padding = '6px 0';
+
+        var w = document.createElement('div');
+        w.textContent = item.word || '(no word)';
+        w.style.fontWeight = 'bold';
+        row.appendChild(w);
+
+        var m = document.createElement('div');
+        m.textContent = (item.meanings && typeof item.meanings === 'string') ? item.meanings : '';
+        m.style.fontStyle = 'italic';
+        row.appendChild(m);
+
+        var removeBtn = document.createElement('button');
+        removeBtn.textContent = 'Remove';
+        removeBtn.style.marginTop = '6px';
+        removeBtn.onclick = function() {
+          // remove this item
+          chrome.storage.local.get({ wordList: [] }, function(res2) {
+            var newList = res2.wordList || [];
+            newList.splice(idx, 1);
+            chrome.storage.local.set({ wordList: newList }, function() {
+              loadWordList();
+            });
+          });
+        };
+        row.appendChild(removeBtn);
+
+        wordListDiv.appendChild(row);
+      })(list[i], i);
+    }
+  });
+}
+
+if (manageBtn) {
+  manageBtn.addEventListener('click', function() {
+    if (manageView) manageView.style.display = 'block';
+    // hide main controls to keep simple
+    lookupBtn.style.display = 'none';
+    wordInput.style.display = 'none';
+    resultsDiv.style.display = 'none';
+    saveBtn.style.display = 'none';
+    loadWordList();
+  });
+}
+
+if (backBtn) {
+  backBtn.addEventListener('click', function() {
+    if (manageView) manageView.style.display = 'none';
+    lookupBtn.style.display = '';
+    wordInput.style.display = '';
+    resultsDiv.style.display = '';
+    // hide save until lookup
+    saveBtn.style.display = 'none';
+  });
+}
+
+if (clearListBtn) {
+  clearListBtn.addEventListener('click', function() {
+    if (!confirm('Clear all saved words?')) return;
+    chrome.storage.local.set({ wordList: [] }, function() {
+      loadWordList();
+    });
+  });
+}
+
+// --- Reminder settings ---
+var reminderEnabled = document.getElementById('reminderEnabled');
+var reminderInterval = document.getElementById('reminderInterval');
+var reminderStart = document.getElementById('reminderStart');
+var reminderEnd = document.getElementById('reminderEnd');
+var saveSettingsBtn = document.getElementById('saveSettingsBtn');
+
+function loadSettings() {
+  if (typeof chrome?.storage?.local === 'undefined') return;
+  chrome.storage.local.get({ reminderEnabled: true, reminderInterval: 30, reminderStart: 0, reminderEnd: 24 }, function(res) {
+    reminderEnabled.checked = !!res.reminderEnabled;
+    reminderInterval.value = res.reminderInterval || 30;
+    reminderStart.value = (typeof res.reminderStart === 'number') ? res.reminderStart : 0;
+    reminderEnd.value = (typeof res.reminderEnd === 'number') ? res.reminderEnd : 24;
+  });
+}
+
+if (saveSettingsBtn) {
+  saveSettingsBtn.addEventListener('click', function() {
+    var enabled = !!reminderEnabled.checked;
+    var interval = parseInt(reminderInterval.value, 10) || 30;
+    if (interval < 1) interval = 1;
+    var start = parseInt(reminderStart.value, 10);
+    var end = parseInt(reminderEnd.value, 10);
+    if (isNaN(start) || start < 0) start = 0;
+    if (isNaN(end) || end < 1) end = 24;
+    // save
+    chrome.storage.local.set({ reminderEnabled: enabled, reminderInterval: interval, reminderStart: start, reminderEnd: end }, function() {
+      alert('Settings saved.');
+    });
+  });
+}
+
+// load saved settings on popup open
+loadSettings();
+

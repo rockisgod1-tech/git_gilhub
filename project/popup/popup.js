@@ -24,22 +24,7 @@ if (themeToggle) {
   });
 }
 
-// Button to set OwlBot API key (saved to chrome.storage.local.owlbotKey)
-const setOwlKeyBtn = document.getElementById("setOwlKeyBtn");
-if (setOwlKeyBtn) {
-  setOwlKeyBtn.addEventListener("click", async () => {
-    const current = await new Promise((resolve) => {
-      chrome.storage.local.get({ owlbotKey: null }, (r) => resolve(r.owlbotKey || ""));
-    });
-    const entry = prompt("Enter your OwlBot API token (leave empty to remove):", current || "");
-    if (entry === null) return; // cancelled
-    if (entry.trim() === "") {
-      chrome.storage.local.remove(["owlbotKey"], () => alert("OwlBot key removed."));
-    } else {
-      chrome.storage.local.set({ owlbotKey: entry.trim() }, () => alert("OwlBot key saved."));
-    }
-  });
-}
+
 
 // Lookup with simple error handling so failures are shown in the popup instead of failing silently.
 document.getElementById("lookupBtn").addEventListener("click", async () => {

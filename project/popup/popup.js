@@ -127,20 +127,29 @@ function loadWordList() {
         var row = document.createElement('div');
         row.style.borderBottom = '1px solid rgba(0,0,0,0.08)';
         row.style.padding = '6px 0';
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.justifyContent = 'space-between';
+
+        // left column: word and meaning
+        var left = document.createElement('div');
+        left.style.flex = '1';
 
         var w = document.createElement('div');
         w.textContent = item.word || '(no word)';
         w.style.fontWeight = 'bold';
-        row.appendChild(w);
+        left.appendChild(w);
 
         var m = document.createElement('div');
         m.textContent = (item.meanings && typeof item.meanings === 'string') ? item.meanings : '';
         m.style.fontStyle = 'italic';
-        row.appendChild(m);
+        m.style.marginTop = '4px';
+        left.appendChild(m);
 
+        // right: remove button
         var removeBtn = document.createElement('button');
         removeBtn.textContent = 'Remove';
-        removeBtn.style.marginTop = '6px';
+        removeBtn.style.marginLeft = '8px';
         removeBtn.onclick = function() {
           // remove this item
           chrome.storage.local.get({ wordList: [] }, function(res2) {
@@ -151,6 +160,8 @@ function loadWordList() {
             });
           });
         };
+
+        row.appendChild(left);
         row.appendChild(removeBtn);
 
         wordListDiv.appendChild(row);

@@ -29,13 +29,23 @@ button {
   cursor: pointer;
 }
 
+.small-btn {
+  width: auto !important;
+  padding: 4px 8px !important;
+  font-size: 0.85rem !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  color: inherit !important;
+  border: 1px solid rgba(0,0,0,0.12) !important;
+}
+
 #definition {
   margin-top: 10px;
   font-style: italic;
   color: #374151;
 }
 
-/* Dark theme overrides */
+/* Dark theme */
 [data-theme="dark"] body {
   background: #0b1220;
   color: #ffffff;

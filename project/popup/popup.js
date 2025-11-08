@@ -147,9 +147,10 @@ function loadWordList() {
         left.appendChild(m);
 
         // right: remove button
-        var removeBtn = document.createElement('button');
-        removeBtn.textContent = 'Remove';
-        removeBtn.style.marginLeft = '8px';
+  var removeBtn = document.createElement('button');
+  removeBtn.textContent = 'Remove';
+  removeBtn.className = 'small-btn';
+  removeBtn.style.marginLeft = '8px';
         removeBtn.onclick = function() {
           // remove this item
           chrome.storage.local.get({ wordList: [] }, function(res2) {
@@ -163,7 +164,6 @@ function loadWordList() {
 
         row.appendChild(left);
         row.appendChild(removeBtn);
-
         wordListDiv.appendChild(row);
       })(list[i], i);
     }

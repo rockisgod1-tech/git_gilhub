@@ -1,4 +1,3 @@
-// Show a reminder notification if there are saved words and the current time is inside the allowed window
 function showReminderIfAllowed() {
   chrome.storage.local.get(["wordList", "reminderEnabled", "reminderStart", "reminderEnd"], function(res) {
     var list = res.wordList || [];
@@ -14,7 +13,6 @@ function showReminderIfAllowed() {
     if (start <= end) {
       inWindow = (hour >= start && hour < end);
     } else {
-      // wrap-around (e.g., start 22, end 6)
       inWindow = (hour >= start || hour < end);
     }
 
@@ -37,19 +35,24 @@ function showReminderIfAllowed() {
       }
     }
 
-    chrome.notifications.create({
-      type: 'basic',
-      iconUrl: 'icons/icon128.png',
-      title: title,
-      message: message || 'Remember this word!'
-    });
+    try {
+      chrome.notifications.create('', {
+        type: 'basic',
+        iconUrl: 'icons/icon128x128.png',
+        title: title,
+        message: message || 'Remember this word!'
+      }, function(notificationId) {
+        // optional callback
+        console.log('Notification shown', notificationId);
+      });
+    } catch (e) {
+      console.error('Failed to create notification:', e);
+    }
   });
 }
 
-// Helper to (re)create the alarm using stored interval
 function setupAlarmFromSettings() {
   chrome.storage.local.get({ reminderEnabled: true, reminderInterval: 30 }, function(res) {
-    // clear previous alarm
     chrome.alarms.clear('reminderAlarm', function() {
       if (!res.reminderEnabled) return;
       var interval = parseInt(res.reminderInterval, 10) || 30;
@@ -61,6 +64,8 @@ function setupAlarmFromSettings() {
 
 // initial setup
 setupAlarmFromSettings();
+// Also run once on startup so the user sees a test notification quickly (if enabled)
+showReminderIfAllowed();
 
 // react to storage changes (when user updates settings)
 chrome.storage.onChanged.addListener(function(changes, area) {

@@ -3,7 +3,7 @@
   "name": "WordsBark",
   "version": "1.0",
   "description": "Your personal dictionary and reminder extension.",
-  "permissions": ["storage", "notifications", "activeTab", "scripting"],
+  "permissions": ["storage", "notifications", "activeTab", "scripting", "alarms"],
   "action": {
     "default_popup": "popup/popup.html", 
     "default_icon": {

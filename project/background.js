@@ -1,55 +1,51 @@
 function showReminderIfAllowed() {
+  // get settings and saved words
   chrome.storage.local.get(["wordList", "reminderEnabled", "reminderStart", "reminderEnd"], function(res) {
     var list = res.wordList || [];
-    if (!res.reminderEnabled) return;
-    if (list.length === 0) return;
+    if (!res.reminderEnabled) return; // reminders turned off
+    if (list.length === 0) return; // nothing to remind
 
     var now = new Date();
     var hour = now.getHours(); // 0-23
     var start = (typeof res.reminderStart === 'number') ? res.reminderStart : 0;
     var end = (typeof res.reminderEnd === 'number') ? res.reminderEnd : 24;
 
-    var inWindow = false;
+    // check if current hour is inside the allowed window
+    var inWindow;
     if (start <= end) {
       inWindow = (hour >= start && hour < end);
     } else {
+      // window wraps midnight
       inWindow = (hour >= start || hour < end);
     }
 
     if (!inWindow) return;
 
-    var randomWord = list[Math.floor(Math.random() * list.length)];
-    var title = 'Reminder: ' + (randomWord.word || 'word');
-    var message = '';
-    if (randomWord.meanings) {
-      if (typeof randomWord.meanings === 'string') {
-        message = randomWord.meanings;
-      } else if (typeof randomWord.meanings === 'object') {
-        // try to pick one short definition
-        for (var p in randomWord.meanings) {
-          if (Array.isArray(randomWord.meanings[p]) && randomWord.meanings[p].length > 0) {
-            message = randomWord.meanings[p][0].definition || '';
-            break;
-          }
-        }
-      }
+    // choose one random saved item and show only the word text
+    var idx = Math.floor(Math.random() * list.length);
+    var item = list[idx];
+    if (!item) return;
+    var wordText = '';
+    if (typeof item === 'string') {
+      wordText = item;
+    } else if (item && item.word) {
+      wordText = item.word;
+    } else {
+      wordText = JSON.stringify(item);
     }
 
-    try {
-      chrome.notifications.create('', {
-        type: 'basic',
-        iconUrl: 'icons/icon128x128.png',
-        title: title,
-        message: message || 'Remember this word!'
-      }, function(notificationId) {
-        // optional callback
-        console.log('Notification shown', notificationId);
-      });
-    } catch (e) {
-      console.error('Failed to create notification:', e);
-    }
+    chrome.notifications.create('', {
+      type: 'basic',
+      iconUrl: 'icons/icon128x128.png',
+      title: 'Word reminder',
+      message: wordText || 'Remember a word!'
+    }, function(notificationId) {
+      // callback after notification created
+      console.log('Notification shown', notificationId, wordText);
+    });
   });
 }
+  // No extra experiment code here; keep background simple for submission.
 
 function setupAlarmFromSettings() {
   chrome.storage.local.get({ reminderEnabled: true, reminderInterval: 30 }, function(res) {
@@ -70,7 +66,8 @@ showReminderIfAllowed();
 // react to storage changes (when user updates settings)
 chrome.storage.onChanged.addListener(function(changes, area) {
   if (area !== 'local') return;
-  if (changes.reminderEnabled || changes.reminderInterval) {
+  // if user changes reminder settings, recreate the alarm
+  if (changes.reminderEnabled || changes.reminderInterval || changes.reminderStart || changes.reminderEnd) {
     setupAlarmFromSettings();
   }
 });
@@ -78,5 +75,14 @@ chrome.storage.onChanged.addListener(function(changes, area) {
 chrome.alarms.onAlarm.addListener(function(alarm) {
   if (alarm && alarm.name === 'reminderAlarm') {
     showReminderIfAllowed();
+  }
+});
+
+// respond to test requests from popup (show a reminder immediately)
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+  if (message && message.action === 'testReminder') {
+    showReminderIfAllowed();
+    // reply immediately (no need to keep port open)
+    sendResponse({ ok: true });
   }
 });
